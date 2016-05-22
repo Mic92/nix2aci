@@ -9,11 +9,10 @@ let
   pkg = if static == true
     then
       (pkgs.busybox.override {
-         extraConfig = ''
-           CONFIG_STATIC y
-           CONFIG_INSTALL_APPLET_DONT y
-           CONFIG_INSTALL_APPLET_SYMLINKS n
-         '';
+       # enableStatic + glibc is broken at the moment
+       enableStatic = true;
+       enableMinimal = true;
+       useMusl = true;
       })
     else pkgs.busybox;
 in
