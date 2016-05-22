@@ -32,7 +32,7 @@ In order to make this usable, a file that can be `cat`ed into the rkt cmdline wi
 Fat ACIs contain all files that are needed to run the contained application. This is the choice if you want to move the ACI onto a system where for whichever reason the nix store outputs are not available.
 
 
-## Demonstration
+## Usage
 The following example builds the busybox ACI expression that is defined in the file [pkgs/linux/busybox.nix](pkgs/linux/busybox.nix).
 In order to be available at top level, an import statement in the *default.nix* is necessary.
 
