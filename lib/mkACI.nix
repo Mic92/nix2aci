@@ -22,6 +22,15 @@ args @ { pkgs
 }:
 
 let
+  mkACI = pkgs.goPackages.buildGoPackage rec {
+    version = "0.0.1";
+    rev = "";
+    name = "mkACI-${version}";
+    goPackagePath = "github.com/steveeJ/nix2aci/lib/mkACI";
+    src = ./.;
+    buildInputs = [ pkgs.go ];
+    extraSrcs = [];
+  };
   mountPoint = readOnly: name: {
      "name" = name;
      "path" = mounts.${name};
@@ -42,7 +51,7 @@ let
 
   manifest = {
     acKind = "ImageManifest";
-    acVersion = "0.7.4+git";
+    acVersion = "0.7.4";
     name = name;
     version = version;
     labels = (propertyList (acLabels // {
@@ -60,7 +69,7 @@ let
     };
   };
 
-  bool_to_str = b: if b then "true" else "false";
+  bool_to_flag = name: value: if value then "-${name}" else "";
 in
   pkgs.stdenv.mkDerivation rec {
   name = builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName;
@@ -69,7 +78,7 @@ in
   inherit os;
   inherit arch;
 
-  buildInputs = [ pkgs.python3 ];
+  buildInputs = [ mkACI ];
 
   # the enclosed environment provides the content for the ACI
   customEnv = pkgs.buildEnv {
@@ -84,16 +93,19 @@ in
 
   phases = "buildPhase";
   buildPhase = ''
-    set -x
-    set -e
-
+    set -xe
+    mkdir "$out"
     # Generic Manifest information
-    python3 ${./mkACI.py} \
-      --thin=${bool_to_str thin} \
-      --dnsquirks=${bool_to_str dnsquirks} \
-      --static=${bool_to_str static} \
-      $out/${acname}.aci ${manifestJson} ${customEnv} \
-      ${if static == true then (builtins.elemAt packages 0) else "closure-*"}
+    (
+      mkACI \
+        ${bool_to_flag "thin" thin} \
+        ${bool_to_flag "dnsquirks" dnsquirks} \
+        ${bool_to_flag "static" static} \
+        "${manifestJson}" \
+        "${customEnv}" \
+        ${if static then (builtins.elemAt packages 0) else "closure-*"}
+    ) 3>&1 4> "$out/checksum" 5> "$out/${acname}.mounts" | \
+      gzip > "$out/${acname}.aci" \
 
     postProcScript=$out/postprocess.sh
     cat > $postProcScript <<EOF
@@ -103,11 +115,11 @@ in
     mkdir -p \$script_outdir
     echo "Linking $out/${acname}.aci into \$script_outdir"
     ln -sf "$out/${acname}.aci" "\$script_outdir/"
-    ${if thin == true then
+    ${if thin then
     "echo \"Linking $out/${acname}.mounts into \\$script_outdir\"
     ln -sf \"$out/${acname}.mounts\" \"\\$script_outdir\""
     else ""}
-    ${if sign == true then
+    ${if sign then
      "gpg2 --yes --batch --armor --output \"\\$script_outdir/${acname}.aci.asc\" --detach-sig \"$out/${acname}.aci\""
      else ""}
     EOF
