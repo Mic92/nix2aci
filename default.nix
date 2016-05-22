@@ -1,4 +1,4 @@
-{ pkgs ? import (fetchTarball "https://nixos.org/releases/nixpkgs/nixpkgs-16.03pre76763.be0abb3/nixexprs.tar.xz") {}
+{ pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/119b7c9863e.tar.gz") {}
 , mkACI ? import lib/mkACI.nix
 }:
 
