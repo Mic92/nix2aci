@@ -26,7 +26,7 @@ let
     version = "0.0.1";
     rev = "";
     name = "mkACI-${version}";
-    goPackagePath = "github.com/steveeJ/nix2aci/lib/mkACI";
+    goPackagePath = "github.com/Mic92/nix2aci/lib/mkACI";
     src = ./.;
     buildInputs = [ pkgs.go ];
     extraSrcs = [];

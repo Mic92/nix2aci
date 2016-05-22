@@ -1,6 +1,6 @@
 # nix2aci
 
-[![Build Status](https://travis-ci.org/steveeJ/nix2aci.svg?branch=master)](https://travis-ci.org/steveeJ/nix2aci)
+[![Build Status](https://travis-ci.org/Mic92/nix2aci.svg?branch=master)](https://travis-ci.org/steveeJ/nix2aci)
 
 Let's use Nix' super powers to build [App Container Images](http://github.com/appc/spec)!
 
