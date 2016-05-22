@@ -90,42 +90,32 @@ in
   acname = "${name}-${version}-${os}-${arch}";
 
   manifestJson = builtins.toFile "manifest" (builtins.toJSON manifest);
+  postProcess = builtins.toFile "postprocess.sh" ''
+#!/usr/bin/env bash
+set -e
+out="$( cd "$( dirname "''${BASH_SOURCE[0]}" )" && pwd )"
+script_outdir="''${1:-ACIs/}"
+echo Linking $out/${acname}.aci into $script_outdir
+ln -sf "$out/${acname}.aci" "$script_outdir/"
+echo Linking $out/${acname}.mounts into $script_outdir
+ln -sf "$out/${acname}.mounts" "$script_outdir"
+${if sign then
+''gpg2 --yes --batch --armor --output "$script_outdir/${acname}.aci.asc" --detach-sig "$out/${acname}.aci"''
+else ""}
+'';
 
   phases = "buildPhase";
   buildPhase = ''
-    set -xe
-    mkdir "$out"
-    # Generic Manifest information
-    (
-      mkACI \
+    install -D -m755 "${postProcess}" "$out/postprocess.sh"
+    mkACI \
         ${bool_to_flag "thin" thin} \
         ${bool_to_flag "dnsquirks" dnsquirks} \
         ${bool_to_flag "static" static} \
         "${manifestJson}" \
         "${customEnv}" \
-        ${if static then (builtins.elemAt packages 0) else "closure-*"}
-    ) 3>&1 4> "$out/checksum" 5> "$out/${acname}.mounts" | \
-      gzip > "$out/${acname}.aci" \
-
-    postProcScript=$out/postprocess.sh
-    cat > $postProcScript <<EOF
-    #!/usr/bin/env bash
-    set -e
-    script_outdir=\''${1:-ACIs/}
-    mkdir -p \$script_outdir
-    echo "Linking $out/${acname}.aci into \$script_outdir"
-    ln -sf "$out/${acname}.aci" "\$script_outdir/"
-    ${if thin then
-    "echo \"Linking $out/${acname}.mounts into \\$script_outdir\"
-    ln -sf \"$out/${acname}.mounts\" \"\\$script_outdir\""
-    else ""}
-    ${if sign then
-     "gpg2 --yes --batch --armor --output \"\\$script_outdir/${acname}.aci.asc\" --detach-sig \"$out/${acname}.aci\""
-     else ""}
-    EOF
-
-    chmod +x "$postProcScript"
-    set +x
+        ${if static then (builtins.elemAt packages 0) else "closure-*"} \
+        3>&1 4> "$out/checksum" 5> "$out/${acname}.mounts" | \
+        gzip > "$out/${acname}.aci" \
   '';
 
 }
