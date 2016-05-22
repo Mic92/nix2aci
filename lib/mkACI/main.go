@@ -21,6 +21,7 @@ type Image struct {
 	thin, static, dnsquirks bool
 	manifest, customEnv     string
 	closures                []string
+	storePaths              []string
 }
 
 type ChecksumWriter struct {
@@ -120,13 +121,13 @@ func writeManifest(tw *tar.Writer, manifest map[string]interface{}) error {
 	return nil
 }
 
-func (i *Image) addManifest(tw *tar.Writer, mountFlags io.Writer, storePaths []string) error {
+func (i *Image) addManifest(tw *tar.Writer, mountFlags io.Writer) error {
 	manifest, err := readManifest(i.manifest)
 	if err != nil {
 		return err
 	}
 	if i.thin {
-		if err := addNixstoreMounts(manifest, mountFlags, storePaths); err != nil {
+		if err := addNixstoreMounts(manifest, mountFlags, i.storePaths); err != nil {
 			return fmt.Errorf("cannot add nixstore mounts: %v", err)
 		}
 	}
@@ -189,19 +190,18 @@ func addNixstoreMounts(manifest map[string]interface{}, mountFlags io.Writer, st
 }
 
 func (i *Image) build(writer, mountFlags io.Writer) (hash.Hash, error) {
-	var storePaths []string
 	var err error
 	if i.static {
-		storePaths = i.closures
+		i.storePaths = i.closures
 	} else {
-		if storePaths, err = pathsFromGraphs(i.closures); err != nil {
+		if i.storePaths, err = pathsFromGraphs(i.closures); err != nil {
 			return nil, err
 		}
 	}
 
 	checksumWriter := ChecksumWriter{writer, sha512.New()}
 	tw := tar.NewWriter(&checksumWriter)
-	if err := i.addManifest(tw, mountFlags, storePaths); err != nil {
+	if err := i.addManifest(tw, mountFlags); err != nil {
 		return nil, err
 	}
 
@@ -210,7 +210,7 @@ func (i *Image) build(writer, mountFlags io.Writer) (hash.Hash, error) {
 	}
 
 	if !i.thin {
-		for _, path := range storePaths {
+		for _, path := range i.storePaths {
 			if err := addPath(tw, path, 0, false); err != nil {
 				return nil, err
 			}
@@ -273,8 +273,32 @@ func pathsFromGraphs(graphs []string) ([]string, error) {
 	return keys, nil
 }
 
+type Metadata struct {
+	Id        string   `json:"id"`
+	ThinImage bool     `json:"thin_image"`
+	Packages  []string `json:"packages"`
+}
+
+func (i *Image) writeMetadata(dest io.Writer, hash []byte) error {
+	var packages []string
+	for _, closure := range i.storePaths {
+		packages = append(packages, filepath.Base(closure))
+	}
+	m := Metadata{
+		fmt.Sprintf("sha512-%x", hash),
+		i.thin,
+		packages,
+	}
+	data, err := json.Marshal(m)
+	if err != nil {
+		return fmt.Errorf("failed to serialize metadata: %v", err)
+	}
+	dest.Write(data)
+	return nil
+}
+
 var tarStream = os.NewFile(3, "tar")
-var checksumStream = os.NewFile(4, "checksum")
+var metadataStream = os.NewFile(4, "metadata")
 var mountFlagsStream = os.NewFile(5, "mountflags")
 
 func main() {
@@ -284,5 +308,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(-1)
 	}
-	fmt.Fprintf(checksumStream, "%x\n", hash.Sum(nil))
+	if err := image.writeMetadata(metadataStream, hash.Sum(nil)); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(-1)
+	}
 }

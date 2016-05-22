@@ -124,7 +124,7 @@ else ""}
         "${manifestJson}" \
         "${customEnv}" \
         ${if static then (builtins.elemAt packages 0) else "closure-*"} \
-        3>&1 4> "$out/checksum" 5> "$out/${acname}.mounts" | \
+        3>&1 4> "$out/metadata.json" 5> "$out/${acname}.mounts" | \
         gzip > "$out/${acname}.aci" \
   '';
 
