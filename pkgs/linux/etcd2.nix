@@ -11,11 +11,7 @@ mkACI rec {
   acVersion = builtins.elemAt (pkgs.stdenv.lib.strings.splitString "v" pkg.name) 1;
 
   packages = [ pkg ];
-  exec = "/bin/etcd";
-
-  mounts = {
-    datadir = "/var/db/etcd2";
-  };
+  exec = ["/bin/etcd"];
 
   mountPoints = {
     datadir.path = "/var/db/etcd2";

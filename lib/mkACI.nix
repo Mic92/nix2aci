@@ -39,11 +39,6 @@ let
   listOfSets = (set: builtins.map (l: {name = l;} // set.${l}) (builtins.attrNames set));
   name = (builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName);
   version = (builtins.replaceStrings ["-"] ["_"] acVersion + versionAddon);
-  execArgv = if (builtins.isString exec) then {exec = [exec];}
-    else if (builtins.isList exec) then {exec = [exec];}
-    else if (isNull exec) then {}
-    else throw "exec should be a list, got: " + (builtins.typeOf exec);
-
   optionalAttr = (key: val: if isNull val then {} else { ${key} = val; });
 
   annotations = (optionalAttr "authors" authors) //
@@ -66,7 +61,7 @@ let
       ports =  map (p: { protocol = "tcp"; } // p) (listOfSets ports);
       isolators = (propertyList isolators);
       environment = (propertyList environment);
-    } // execArgv;
+    } // (optionalAttr "exec" exec);
     annotations = (propertyList annotations);
   };
 

@@ -17,14 +17,12 @@ let
          '';
       })
     else pkgs.busybox;
-in
-
-mkACI rec {
+in mkACI rec {
   inherit pkgs;
   inherit static;
   thin = false;
   packages = [ pkg busybox pkgs.eject ];
   versionAddon = if static == true then "-static" else "";
-  exec = ''/bin/busybox -- sh -c "busybox mkdir -p /sbin; /bin/busybox --install -s; sh"'';
+  exec = ["/bin/busybox" "--" "sh" "-c" "busybox mkdir -p /sbin; /bin/busybox --install -s; sh"];
 }
 

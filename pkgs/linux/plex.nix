@@ -1,9 +1,7 @@
 { mkACI, pkgs, thin ? false, ... } @ args:
 let
   pkg = pkgs.plex;
-in
-
-mkACI rec {
+in mkACI rec {
   inherit pkgs;
   inherit thin;
   packages = [ pkg ];
@@ -17,7 +15,7 @@ mkACI rec {
     https.port = 32400;
   };
 
-  exec = "\"/usr/lib/plexmediaserver/Plex Media Server\"";
+  exec = ["/usr/lib/plexmediaserver/Plex Media Server"];
 
   environment = {
     PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR = "/var/lib/plexmediaserver/Library/Application Support";

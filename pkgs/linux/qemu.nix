@@ -13,11 +13,10 @@ mkACI rec {
   inherit thin;
   packages = [ pkg ];
   versionAddon = "";
-  exec = ''/bin/qemu-kvm -- \
-    -spice port=5101,addr=ipv4 \
-    -vnc :0 \
-    -boot reboot-timeout=60 \
-  '';
+  exec = ["/bin/qemu-kvm" "--"
+    "-spice" "port=5101,addr=ipv4"
+    "-vnc" ":0"
+    "-boot" "reboot-timeout=60"];
 
   ports = {
     spice.port = 5101;

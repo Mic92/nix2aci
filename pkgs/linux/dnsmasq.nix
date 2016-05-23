@@ -14,7 +14,7 @@ mkACI rec {
   dnsquirks = false;
   packages = [ pkg ];
   versionAddon = "";
-  exec = ''/bin/dnsmasq'';
+  exec = ["/bin/dnsmasq"];
 
   mounts = {
     varlibmisc.path = "/var/lib/misc/";
@@ -23,9 +23,9 @@ mkACI rec {
   };
 
   isolators = {
-    "os/linux/capabilities-retain-set" = ''{
-      "set": [ "CAP_NET_BIND_SERVICE", "CAP_NET_ADMIN"]
-    }'';
+    "os/linux/capabilities-retain-set" = {
+      set = ["CAP_NET_BIND_SERVICE" "CAP_NET_ADMIN"];
+    };
   };
 }
 
