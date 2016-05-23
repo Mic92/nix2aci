@@ -12,7 +12,7 @@ args @ { pkgs
 , mountsRo ? {}
 , ports ? {}
 , env ? {}
-, exec ? "/bin/sh"
+, exec ? null
 , user ? "0"
 , group ? "0"
 , sign ? true
@@ -47,8 +47,9 @@ let
   mountPointsRo = (builtins.map (mountPoint mountsRo true) (builtins.attrNames mountsRo));
   name = (builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName);
   version = (builtins.replaceStrings ["-"] ["_"] acVersion + versionAddon);
-  execArgv = if (builtins.isString exec) then [exec]
-    else if (builtins.isList exec) then exec
+  execArgv = if (builtins.isString exec) then {exec = [exec];}
+    else if (builtins.isList exec) then {exec = [exec];}
+    else if (isNull exec) then {}
     else throw "exec should be a list, got: " + (builtins.typeOf exec);
 
   portProps = (builtins.map (p: {"name" = p;} // ports.${p}) (builtins.attrNames ports));
@@ -69,14 +70,13 @@ let
       arch = arch;
     }));
     app = {
-      exec = execArgv;
       user = (toString user);
       group = (toString group);
       mountPoints = mountPoints ++ mountPointsRo;
       ports = portProps;
       isolators = (propertyList isolators);
       environment = (propertyList env);
-    };
+    } // execArgv;
     annotations = (propertyList annotations);
   };
 
