@@ -13,7 +13,7 @@ mkACI rec {
   user = "1000";
   group = "1000";
 
-  env = {
+  environment = {
     LC_ALL = "en_US.UTF-8";
     LANG = "en_US.UTF-8";
   };

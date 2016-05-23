@@ -19,7 +19,7 @@ mkACI rec {
 
   exec = "\"/usr/lib/plexmediaserver/Plex Media Server\"";
 
-  env = {
+  environment = {
     PLEX_MEDIA_SERVER_APPLICATION_SUPPORT_DIR = "/var/lib/plexmediaserver/Library/Application Support";
     PLEX_MEDIA_SERVER_HOME = "/usr/lib/plexmediaserver";
     PLEX_MEDIA_SERVER_MAX_PLUGIN_PROCS = "6";

@@ -11,7 +11,7 @@ args @ { pkgs
 , mounts ? {}
 , mountsRo ? {}
 , ports ? {}
-, env ? {}
+, environment ? {}
 , exec ? null
 , user ? "0"
 , group ? "0"
@@ -75,7 +75,7 @@ let
       mountPoints = mountPoints ++ mountPointsRo;
       ports = portProps;
       isolators = (propertyList isolators);
-      environment = (propertyList env);
+      environment = (propertyList environment);
     } // execArgv;
     annotations = (propertyList annotations);
   };

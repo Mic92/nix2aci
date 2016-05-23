@@ -21,7 +21,7 @@ mkACI rec {
     resolvconf = "/etc/resolv.conf";
   };
 
-  env = {
+  environment = {
     ETCD_DATA_DIR = "/var/db/etcd2/";
   };
 }
