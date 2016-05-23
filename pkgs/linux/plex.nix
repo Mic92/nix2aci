@@ -14,7 +14,7 @@ mkACI rec {
   };
 
   ports = {
-    https = { protocol = "tcp"; port = "32400"; };
+    https.port = 32400;
   };
 
   exec = "\"/usr/lib/plexmediaserver/Plex Media Server\"";

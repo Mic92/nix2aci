@@ -11,8 +11,8 @@ mkACI rec {
   packages = [ pkg pkgs.dovecot_pigeonhole ];
 
   ports = {
-    imaps = { protocol = "tcp"; port = "993"; };
-    sieve = { protocol = "tcp"; port = "4190"; };
+    imaps.port = 993;
+    sieve.port = 4190;
   };
 
   mountPoints = {

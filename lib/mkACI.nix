@@ -44,8 +44,6 @@ let
     else if (isNull exec) then {}
     else throw "exec should be a list, got: " + (builtins.typeOf exec);
 
-  portProps = (builtins.map (p: {"name" = p;} // ports.${p}) (builtins.attrNames ports));
-
   optionalAttr = (key: val: if isNull val then {} else { ${key} = val; });
 
   annotations = (optionalAttr "authors" authors) //
@@ -65,7 +63,7 @@ let
       user = (toString user);
       group = (toString group);
       mountPoints = (listOfSets mountPoints);
-      ports = portProps;
+      ports =  map (p: { protocol = "tcp"; } // p) (listOfSets ports);
       isolators = (propertyList isolators);
       environment = (propertyList environment);
     } // execArgv;
