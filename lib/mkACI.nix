@@ -22,6 +22,7 @@ args @ { pkgs
 , authors ? null
 , homepage ? null
 , documentation ? null
+, compression ? "gzip"
 }:
 
 let
@@ -80,6 +81,32 @@ let
   };
 
   bool_to_flag = name: value: if value then "-${name}" else "";
+
+  compressionOptions = {
+    none = {
+      buildInputs = [];
+      compressor = "";
+    };
+    bzip2 = {
+      buildInputs = [pkgs.pbzip2];
+      compressor = "pbzip2";
+    };
+    gzip = {
+      buildInputs = [pkgs.pigz];
+      compressor = "pigz -nT";
+    };
+    xz = {
+      buildInputs = [pkgs.xz]
+      compressor = "xz -T 0 -c -z -"
+    }
+  };
+
+  execArgv = if (builtins.isString exec) then [exec]
+    else if (builtins.isList exec) then exec
+    else throw "exec should be a list, got: " + (builtins.typeOf exec);
+
+  compression = if (builtins.hasAttr c)
+
 in
   pkgs.stdenv.mkDerivation rec {
   name = builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName;

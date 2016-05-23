@@ -1,5 +1,6 @@
 { pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/119b7c9863e.tar.gz") {}
 , mkACI ? import lib/mkACI.nix
+, mkPod ? import lib/mkPod.nix
 }:
 
 let
