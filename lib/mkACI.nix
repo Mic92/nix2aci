@@ -22,6 +22,7 @@ args @ { pkgs
 , authors ? null
 , homepage ? null
 , documentation ? null
+, compression ? "gzip"
 }:
 
 let
@@ -80,6 +81,29 @@ let
   };
 
   bool_to_flag = name: value: if value then "-${name}" else "";
+
+  compressionTypes = {
+    none = {
+      buildInputs = [];
+      proc = "";
+    };
+    bzip2 = {
+      buildInputs = [pkgs.pbzip2];
+      proc = "pbzip2";
+    };
+    gzip = {
+      buildInputs = [pkgs.pigz];
+      proc = "pigz -nT";
+    };
+    xz = {
+      buildInputs = [pkgs.xz];
+      proc = "xz -T 0 -c -z -";
+    };
+  };
+
+  compressionType = if (builtins.hasAttr compression compressionTypes) then compressionTypes.${compression}
+    else throw "invalid compression option: " + compression;
+
 in
   pkgs.stdenv.mkDerivation rec {
   name = builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName;
@@ -88,7 +112,7 @@ in
   inherit os;
   inherit arch;
 
-  buildInputs = [ mkACI ];
+  buildInputs = [ mkACI ] ++ compressionType.buildInputs;
 
   # the enclosed environment provides the content for the ACI
   customEnv = pkgs.buildEnv {
@@ -125,7 +149,7 @@ else ""}
         "${customEnv}" \
         ${if static then (builtins.elemAt packages 0) else "closure-*"} \
         3>&1 4> "$out/metadata.json" 5> "$out/${acname}.mounts" | \
-        gzip > "$out/${acname}.aci" \
+        ${compressionType.proc} > "$out/${acname}.aci" \
   '';
 
 }
