@@ -34,16 +34,16 @@ let
     buildInputs = [ pkgs.go ];
     extraSrcs = [];
   };
-  mountPoint = readOnly: name: {
+  propertyList = (list:
+    builtins.map (l: {"name" = l; "value" = list.${l}; }) (builtins.attrNames list));
+
+  mountPoint = mounts: readOnly: name: {
      "name" = name;
      "path" = mounts.${name};
      "readOnly" = readOnly;
   };
-  propertyList = (list:
-    builtins.map (l: {"name" = l; "value" = list.${l}; }) (builtins.attrNames list));
-
-  mountPoints = (builtins.map (mountPoint false) (builtins.attrNames mounts));
-  mountPointsRo = (builtins.map (mountPoint true) (builtins.attrNames mountsRo));
+  mountPoints = (builtins.map (mountPoint mounts false) (builtins.attrNames mounts));
+  mountPointsRo = (builtins.map (mountPoint mountsRo true) (builtins.attrNames mountsRo));
   name = (builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName);
   version = (builtins.replaceStrings ["-"] ["_"] acVersion + versionAddon);
   execArgv = if (builtins.isString exec) then [exec]
