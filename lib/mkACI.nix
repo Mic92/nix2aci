@@ -8,8 +8,7 @@ args @ { pkgs
 , os ? builtins.elemAt (pkgs.stdenv.lib.strings.splitString "-" pkg.system) 1
 , thin ? false
 , acLabels ? {}
-, mounts ? {}
-, mountsRo ? {}
+, mountPoints ? {}
 , ports ? {}
 , environment ? {}
 , exec ? null
@@ -36,15 +35,8 @@ let
     extraSrcs = [];
   };
   propertyList = (list:
-    builtins.map (l: {"name" = l; "value" = list.${l}; }) (builtins.attrNames list));
-
-  mountPoint = mounts: readOnly: name: {
-     "name" = name;
-     "path" = mounts.${name};
-     "readOnly" = readOnly;
-  };
-  mountPoints = (builtins.map (mountPoint mounts false) (builtins.attrNames mounts));
-  mountPointsRo = (builtins.map (mountPoint mountsRo true) (builtins.attrNames mountsRo));
+    builtins.map (l: {name = l; value = list.${l}; }) (builtins.attrNames list));
+  listOfSets = (set: builtins.map (l: {name = l;} // set.${l}) (builtins.attrNames set));
   name = (builtins.replaceStrings ["go1.5-" "go1.4-" "-"] [ "" "" "_"] acName);
   version = (builtins.replaceStrings ["-"] ["_"] acVersion + versionAddon);
   execArgv = if (builtins.isString exec) then {exec = [exec];}
@@ -54,7 +46,7 @@ let
 
   portProps = (builtins.map (p: {"name" = p;} // ports.${p}) (builtins.attrNames ports));
 
-  optionalAttr = (key: val: if isNull val then {} else {${key} = val; });
+  optionalAttr = (key: val: if isNull val then {} else { ${key} = val; });
 
   annotations = (optionalAttr "authors" authors) //
                 (optionalAttr "homepage" homepage) //
@@ -72,7 +64,7 @@ let
     app = {
       user = (toString user);
       group = (toString group);
-      mountPoints = mountPoints ++ mountPointsRo;
+      mountPoints = (listOfSets mountPoints);
       ports = portProps;
       isolators = (propertyList isolators);
       environment = (propertyList environment);

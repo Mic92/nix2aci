@@ -17,9 +17,9 @@ mkACI rec {
   exec = ''/bin/dnsmasq'';
 
   mounts = {
-    varlibmisc = "/var/lib/misc/";
-    varrun = "/var/run/";
-    pxe = "/pxe/";
+    varlibmisc.path = "/var/lib/misc/";
+    varrun.path = "/var/run/";
+    pxe.path = "/pxe/";
   };
 
   isolators = {

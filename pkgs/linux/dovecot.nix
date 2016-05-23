@@ -15,9 +15,9 @@ mkACI rec {
     sieve = { protocol = "tcp"; port = "4190"; };
   };
 
-  mounts = {
-    mail = "/var/vmail";
-    etc-dovecot = "/etc/dovecot";
+  mountPoints = {
+    mail.path = "/var/vmail";
+    etc-dovecot.path = "/etc/dovecot";
   };
 
   environment = {

@@ -17,8 +17,9 @@ mkACI rec {
     datadir = "/var/db/etcd2";
   };
 
-  mountsRo = {
-    resolvconf = "/etc/resolv.conf";
+  mountPoints = {
+    datadir.path = "/var/db/etcd2";
+    resolvconf = { path = "/etc/resolv.conf"; readOnly = true; };
   };
 
   environment = {

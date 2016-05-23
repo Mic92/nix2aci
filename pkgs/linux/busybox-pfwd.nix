@@ -30,8 +30,8 @@ mkACI rec {
     "sh" "-c" "busybox mkdir -p /sbin; /bin/busybox --install -s; sh"
   ];
 
-  mountsRo = {
-    rslvc = "/etc/resolv.conf";
+  mountPoints = {
+    rslvc.path = "/etc/resolv.conf";
   };
 
   ports = {

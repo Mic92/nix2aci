@@ -8,9 +8,9 @@ mkACI rec {
   inherit thin;
   packages = [ pkg ];
 
-  mounts = {
-    config = "/var/lib/plexmediaserver/Library/Application Support";
-    media = "/media";
+  mountPoints = {
+    config.path = "/var/lib/plexmediaserver/Library/Application Support";
+    media.path = "/media";
   };
 
   ports = {
