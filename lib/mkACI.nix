@@ -12,7 +12,7 @@ args @ { pkgs
 , mountsRo ? {}
 , ports ? {}
 , env ? {}
-, exec ? null
+, exec ? "/bin/sh"
 , user ? "0"
 , group ? "0"
 , sign ? true
